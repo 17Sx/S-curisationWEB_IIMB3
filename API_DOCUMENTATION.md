@@ -20,7 +20,8 @@
 
 **Endpoint:** `POST /register`  
 **Authentification:** Non requise  
-**Content-Type:** `application/json`
+**Content-Type:** `application/json`  
+**Rôle assigné:** USER (par défaut)
 
 **Body:**
 
@@ -47,7 +48,8 @@
 **Endpoint:** `POST /login`  
 **Authentification:** Non requise  
 **Content-Type:** `application/json`  
-**Rate Limit:** 1 tentative toutes les 5 secondes par utilisateur
+**Rate Limit:** 1 tentative toutes les 5 secondes par utilisateur  
+**Permission requise:** `can_post_login`
 
 **Body:**
 
@@ -76,6 +78,7 @@
 
 **Endpoint:** `GET /my-user`  
 **Authentification:** Requise  
+**Permission requise:** `can_get_my_user`  
 **Headers:**
 
 ```
@@ -98,6 +101,7 @@ Authorization: Bearer <token>
 
 **Endpoint:** `GET /users`  
 **Authentification:** Requise  
+**Permission requise:** `can_get_users`  
 **Headers:**
 
 ```

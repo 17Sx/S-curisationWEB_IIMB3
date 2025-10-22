@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password: hashedPassword,
+        roleId: 2,
         lastPasswordChange: new Date().toISOString(),
       })
       .returning({

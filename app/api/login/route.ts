@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { users } from "@/lib/schema";
+import { roles, users } from "@/lib/schema";
 import { generateToken } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+
+const loginAttempts = new Map<string, number>();
 
 const loginSchema = z.object({
   email: z.string().email("Email invalide"),
@@ -15,7 +17,15 @@ const loginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Body JSON invalide" },
+        { status: 400 }
+      );
+    }
 
     const validation = loginSchema.safeParse(body);
     if (!validation.success) {
@@ -40,11 +50,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limiting: vérifier la dernière tentative de connexion
-    if (user.lastLoginAttempt) {
-      const timeSinceLastAttempt =
-        Date.now() - new Date(user.lastLoginAttempt).getTime();
-      const minTimeBetweenAttempts = 5000; // 5 secondes
+    // rate limiting
+    const now = Date.now();
+    const minTimeBetweenAttempts = 5000; // 5s
+    const userKey = `user_${user.id}`;
+
+    // check locks
+    if (loginAttempts.has(userKey)) {
+      const lastAttempt = loginAttempts.get(userKey)!;
+      const timeSinceLastAttempt = now - lastAttempt;
 
       if (timeSinceLastAttempt < minTimeBetweenAttempts) {
         const remainingTime = Math.ceil(
@@ -59,17 +73,37 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Mettre à jour la dernière tentative de connexion
-    await db
-      .update(users)
-      .set({ lastLoginAttempt: new Date().toISOString() })
-      .where(eq(users.id, user.id));
+    // MAJ locks 
+    loginAttempts.set(userKey, now);
+
+    // clean locks
+    for (const [key, timestamp] of loginAttempts.entries()) {
+      if (now - timestamp > 60000) {
+        loginAttempts.delete(key);
+      }
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: "Email ou mot de passe invalide" },
         { status: 401 }
+      );
+    }
+
+    // checck permission
+    const [role] = await db
+      .select({
+        canPostLogin: roles.canPostLogin,
+      })
+      .from(roles)
+      .where(eq(roles.id, user.roleId))
+      .limit(1);
+
+    if (!role || !role.canPostLogin) {
+      return NextResponse.json(
+        { error: "Permission refusée" },
+        { status: 403 }
       );
     }
 

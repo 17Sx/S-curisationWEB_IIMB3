@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 import { db } from "./db";
-import { users } from "./schema";
+import { users, roles } from "./schema";
 import { eq } from "drizzle-orm";
 
 interface JWTPayload {
@@ -16,6 +16,13 @@ export class AuthError extends Error {
   constructor(message: string, public statusCode: number = 401) {
     super(message);
     this.name = "AuthError";
+  }
+}
+
+export class PermissionError extends AuthError {
+  constructor(message: string) {
+    super(message, 403);
+    this.name = "PermissionError";
   }
 }
 
@@ -42,6 +49,7 @@ export async function authenticateRequest(request: NextRequest) {
         name: users.name,
         email: users.email,
         lastPasswordChange: users.lastPasswordChange,
+        roleId: users.roleId,
       })
       .from(users)
       .where(eq(users.id, decoded.userId))
@@ -51,7 +59,7 @@ export async function authenticateRequest(request: NextRequest) {
       throw new AuthError("Utilisateur introuvable", 401);
     }
 
-    // Vérifier si le mot de passe a été changé après l'émission du token
+    // checck password change
     const passwordChangeTimestamp = new Date(user.lastPasswordChange).getTime();
     if (decoded.passwordChangeDate < passwordChangeTimestamp) {
       throw new AuthError(
@@ -64,6 +72,7 @@ export async function authenticateRequest(request: NextRequest) {
       userId: user.id,
       name: user.name,
       email: user.email,
+      roleId: user.roleId,
     };
   } catch (error) {
     if (error instanceof AuthError) {
@@ -77,6 +86,35 @@ export async function authenticateRequest(request: NextRequest) {
     }
     throw new AuthError("Erreur d'authentification", 401);
   }
+}
+
+export async function assertPermission(
+  request: NextRequest,
+  permission: "canPostLogin" | "canGetMyUser" | "canGetUsers"
+) {
+  const auth = await authenticateRequest(request);
+
+  const [role] = await db
+    .select({
+      id: roles.id,
+      name: roles.name,
+      canPostLogin: roles.canPostLogin,
+      canGetMyUser: roles.canGetMyUser,
+      canGetUsers: roles.canGetUsers,
+    })
+    .from(roles)
+    .where(eq(roles.id, auth.roleId!))
+    .limit(1);
+
+  if (!role) {
+    throw new PermissionError("Rôle introuvable");
+  }
+
+  if (!role[permission]) {
+    throw new PermissionError("Permission refusée");
+  }
+
+  return auth;
 }
 
 export function generateToken(

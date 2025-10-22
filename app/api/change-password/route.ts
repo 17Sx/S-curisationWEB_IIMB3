@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
       })
       .where(eq(users.id, user.id));
 
-    // Générer un nouveau token avec la nouvelle date de changement de mot de passe
+    // New token
     const newToken = generateToken(user.id, user.email, now);
 
     return NextResponse.json({

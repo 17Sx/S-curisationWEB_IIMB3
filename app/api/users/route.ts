@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateRequest, AuthError } from "@/lib/auth";
+import { assertPermission, AuthError, PermissionError } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
 
 export async function GET(request: NextRequest) {
   try {
-    await authenticateRequest(request);
+    await assertPermission(request, "canGetUsers");
 
     const allUsers = await db
       .select({
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       total: allUsers.length,
     });
   } catch (error) {
-    if (error instanceof AuthError) {
+    if (error instanceof AuthError || error instanceof PermissionError) {
       return NextResponse.json(
         { error: error.message },
         { status: error.statusCode }
