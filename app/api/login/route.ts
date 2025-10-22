@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
+import { generateToken } from "@/lib/auth";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -40,6 +40,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Rate limiting: vérifier la dernière tentative de connexion
+    if (user.lastLoginAttempt) {
+      const timeSinceLastAttempt =
+        Date.now() - new Date(user.lastLoginAttempt).getTime();
+      const minTimeBetweenAttempts = 5000; // 5 secondes
+
+      if (timeSinceLastAttempt < minTimeBetweenAttempts) {
+        const remainingTime = Math.ceil(
+          (minTimeBetweenAttempts - timeSinceLastAttempt) / 1000
+        );
+        return NextResponse.json(
+          {
+            error: `Trop de tentatives. Réessayez dans ${remainingTime} secondes`,
+          },
+          { status: 429 }
+        );
+      }
+    }
+
+    // Mettre à jour la dernière tentative de connexion
+    await db
+      .update(users)
+      .set({ lastLoginAttempt: new Date().toISOString() })
+      .where(eq(users.id, user.id));
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -48,20 +73,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const JWT_SECRET = process.env.JWT_SECRET;
-    if (!JWT_SECRET) {
-      return NextResponse.json(
-        { error: "Configuration JWT manquante" },
-        { status: 500 }
-      );
-    }
-
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = generateToken(
+      user.id,
+      user.email,
+      new Date(user.lastPasswordChange)
+    );
 
     return NextResponse.json({
       token,
+      expiresIn: "1h",
       user: {
         id: user.id,
         name: user.name,
