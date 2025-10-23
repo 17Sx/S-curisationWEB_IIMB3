@@ -15,6 +15,13 @@
       "when": 1761135758477,
       "tag": "0001_dazzling_skrulls",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761144620194,
+      "tag": "0002_light_ser_duncan",
+      "breakpoints": true
     }
   ]
 }

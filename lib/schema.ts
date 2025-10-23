@@ -6,7 +6,9 @@ import {
   timestamp,
   boolean,
   integer,
+  bigint,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -28,6 +30,29 @@ export const roles = pgTable("roles", {
   canPostLogin: boolean("can_post_login").notNull().default(true),
   canGetMyUser: boolean("can_get_my_user").notNull().default(true),
   canGetUsers: boolean("can_get_users").notNull().default(false),
+  canPostProducts: boolean("can_post_products").notNull().default(false),
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  shopifyId: bigint("shopify_id", { mode: "bigint" }).notNull().unique(),
+  createdBy: integer("created_by")
+    .notNull()
+    .references(() => users.id),
+  salesCount: integer("sales_count").notNull().default(0),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
+});
+
+export const productsRelations = relations(products, ({ one }) => ({
+  creator: one(users, {
+    fields: [products.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  products: many(products),
+}));

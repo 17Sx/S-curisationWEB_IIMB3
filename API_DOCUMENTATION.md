@@ -159,3 +159,100 @@ Authorization: Bearer <token>
   "expiresIn": "1h"
 }
 ```
+
+---
+
+### 7. Create Product
+
+**Endpoint:** `POST /products`  
+**Authentification:** Requise  
+**Permission requise:** `can_post_products`  
+**Content-Type:** `application/json`  
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Body:**
+
+```json
+{
+  "title": "Mon produit",
+  "price": "19.99"
+}
+```
+
+**Réponse (201):**
+
+```json
+{
+  "id": 1,
+  "shopifyId": "1234567890",
+  "title": "Mon produit",
+  "price": "19.99",
+  "createdBy": 1,
+  "salesCount": 0,
+  "createdAt": "2025-10-22T12:00:00.000Z"
+}
+```
+
+---
+
+### 8. Get My Products
+
+**Endpoint:** `GET /my-products`  
+**Authentification:** Requise  
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Réponse (200):**
+
+```json
+{
+  "products": [
+    {
+      "id": 1,
+      "shopifyId": "1234567890",
+      "salesCount": 0,
+      "createdAt": "2025-10-22T12:00:00.000Z",
+      "updatedAt": "2025-10-22T12:00:00.000Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+### 9. Get All Products
+
+**Endpoint:** `GET /products`  
+**Authentification:** Requise  
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Réponse (200):**
+
+```json
+{
+  "products": [
+    {
+      "id": 1,
+      "shopifyId": "1234567890",
+      "createdBy": 1,
+      "salesCount": 0,
+      "createdAt": "2025-10-22T12:00:00.000Z",
+      "creatorName": "John Doe",
+      "creatorEmail": "john@example.com"
+    }
+  ],
+  "total": 1
+}
+```

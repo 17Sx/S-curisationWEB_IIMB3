@@ -90,7 +90,11 @@ export async function authenticateRequest(request: NextRequest) {
 
 export async function assertPermission(
   request: NextRequest,
-  permission: "canPostLogin" | "canGetMyUser" | "canGetUsers"
+  permission:
+    | "canPostLogin"
+    | "canGetMyUser"
+    | "canGetUsers"
+    | "canPostProducts"
 ) {
   const auth = await authenticateRequest(request);
 
@@ -101,6 +105,7 @@ export async function assertPermission(
       canPostLogin: roles.canPostLogin,
       canGetMyUser: roles.canGetMyUser,
       canGetUsers: roles.canGetUsers,
+      canPostProducts: roles.canPostProducts,
     })
     .from(roles)
     .where(eq(roles.id, auth.roleId!))
