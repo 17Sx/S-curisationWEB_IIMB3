@@ -256,3 +256,96 @@ Authorization: Bearer <token>
   "total": 1
 }
 ```
+
+---
+
+### 10. API Keys Management
+
+**Endpoint:** `GET /apikey`  
+**Authentification:** Requise (JWT ou API Key)
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+# OU  
+X-API-Key: <api_key>
+```
+
+**Réponse (200):**
+
+  ```json
+[
+  {
+    "id": "abc123",
+    "name": "Mon API Key",
+    "createdAt": "n/a"
+  }
+]
+```
+
+---
+
+### 11. Create API Key
+
+**Endpoint:** `POST /apikey`  
+**Authentification:** Requise (JWT ou API Key)  
+**Content-Type:** `application/json`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+# OU
+X-API-Key: <api_key>
+```
+
+**Body:**
+
+```json
+{
+  "name": "Mon API Key"
+}
+```
+
+**Réponse (200):**
+
+```json
+{
+  "id": "abc123",
+  "name": "Mon API Key",
+  "key": "apikey_xyz789"
+}
+```
+
+---
+
+### 12. Delete API Key
+
+**Endpoint:** `DELETE /apikey`  
+**Authentification:** Requise (JWT ou API Key)  
+**Content-Type:** `application/json`
+
+**Headers:**
+
+```
+Authorization: Bearer <token>
+# OU
+X-API-Key: <api_key>
+```
+
+**Body:**
+
+```json
+{
+  "id": "abc123"
+}
+```
+
+**Réponse (200):**
+
+```json
+{
+  "message": "API key deleted"
+}
+```

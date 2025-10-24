@@ -95,6 +95,7 @@ export async function assertPermission(
     | "canGetMyUser"
     | "canGetUsers"
     | "canPostProducts"
+    | "canManageApiKeys"
 ) {
   const auth = await authenticateRequest(request);
 
@@ -106,6 +107,7 @@ export async function assertPermission(
       canGetMyUser: roles.canGetMyUser,
       canGetUsers: roles.canGetUsers,
       canPostProducts: roles.canPostProducts,
+      canManageApiKeys: roles.canManageApiKeys,
     })
     .from(roles)
     .where(eq(roles.id, auth.roleId!))

@@ -10,6 +10,17 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
+export const apiKeys = pgTable("api_keys", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  key: varchar("key", { length: 255 }).notNull().unique(),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
+});
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
@@ -31,6 +42,7 @@ export const roles = pgTable("roles", {
   canGetMyUser: boolean("can_get_my_user").notNull().default(true),
   canGetUsers: boolean("can_get_users").notNull().default(false),
   canPostProducts: boolean("can_post_products").notNull().default(false),
+  canManageApiKeys: boolean("can_manage_api_keys").notNull().default(true),
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });
@@ -55,4 +67,12 @@ export const productsRelations = relations(products, ({ one }) => ({
 
 export const usersRelations = relations(users, ({ many }) => ({
   products: many(products),
+  apiKeys: many(apiKeys),
+}));
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [apiKeys.userId],
+    references: [users.id],
+  }),
 }));
