@@ -268,13 +268,13 @@ Authorization: Bearer <token>
 
 ```
 Authorization: Bearer <token>
-# OU  
+# OU
 X-API-Key: <api_key>
 ```
 
 **Réponse (200):**
 
-  ```json
+```json
 [
   {
     "id": "abc123",
@@ -347,5 +347,45 @@ X-API-Key: <api_key>
 ```json
 {
   "message": "API key deleted"
+}
+```
+
+---
+
+### 13. Shopify Sales Webhook
+
+**Endpoint:** `POST /webhooks/shopify-sales`  
+**Authentification:** Signature HMAC-SHA256  
+**Content-Type:** `application/json`  
+**Headers:**
+
+```
+X-Shopify-Hmac-Sha256: <signature_base64>
+```
+
+**Description:** Webhook appelé automatiquement par Shopify lors de la création d'une commande. Met à jour le `sales_count` des produits vendus en fonction de la quantité.
+
+**Body (exemple de payload Shopify):**
+
+```json
+{
+  "id": 820982911946154508,
+  "line_items": [
+    {
+      "product_id": 632910392,
+      "quantity": 2
+    }
+  ]
+}
+```
+
+**Réponse (200):**
+
+```json
+{
+  "message": "Webhook traité avec succès",
+  "orderId": 820982911946154508,
+  "productsUpdated": 2,
+  "productsFailed": 0
 }
 ```

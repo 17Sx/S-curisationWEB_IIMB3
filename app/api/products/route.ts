@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Valider que le prix est un nombre valide
     const priceNum = parseFloat(body.price);
     if (isNaN(priceNum) || priceNum < 0) {
       return NextResponse.json(
