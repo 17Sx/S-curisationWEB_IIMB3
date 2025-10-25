@@ -389,3 +389,81 @@ X-Shopify-Hmac-Sha256: <signature_base64>
   "productsFailed": 0
 }
 ```
+
+---
+
+## Endpoints PREMIUM
+
+### 13. Create Product with Image (PREMIUM)
+
+**Endpoint:** `POST /products`  
+**Authentification:** Requise (rôle PREMIUM)  
+**Headers:**
+
+```
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+**Body:**
+
+```json
+{
+  "title": "Nom du produit",
+  "price": "99.99",
+  "image_url": "https://example.com/image.jpg"
+}
+```
+
+**Réponse (201):**
+
+```json
+{
+  "id": 1,
+  "shopifyId": "1234567890",
+  "title": "Nom du produit",
+  "price": "99.99",
+  "imageUrl": "https://example.com/image.jpg",
+  "createdBy": 1,
+  "salesCount": 0,
+  "createdAt": "2025-10-24T12:00:00.000Z"
+}
+```
+
+
+### 14. Get My Bestsellers (PREMIUM)
+
+**Endpoint:** `GET /my-bestsellers`  
+**Authentification:** Requise (rôle PREMIUM)  
+**Headers:**
+
+```
+Authorization: Bearer <token>
+```
+
+**Réponse (200):**
+
+```json
+{
+  "bestsellers": [
+    {
+      "id": 1,
+      "shopifyId": "1234567890",
+      "salesCount": 150,
+      "imageUrl": "https://example.com/image.jpg",
+      "createdAt": "2025-10-22T12:00:00.000Z",
+      "updatedAt": "2025-10-24T15:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "shopifyId": "9876543210",
+      "salesCount": 87,
+      "imageUrl": null,
+      "createdAt": "2025-10-23T08:00:00.000Z",
+      "updatedAt": "2025-10-24T14:00:00.000Z"
+    }
+  ],
+  "total": 2
+}
+```
+

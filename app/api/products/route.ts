@@ -38,9 +38,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier les permissions PREMIUM pour image_url
+    let imageUrl: string | null = null;
+    if (body.image_url) {
+      if (!auth.role?.canUploadImages) {
+        return NextResponse.json(
+          { error: "Vous devez avoir un rôle PREMIUM pour ajouter des images" },
+          { status: 403 }
+        );
+      }
+
+      if (typeof body.image_url !== "string") {
+        return NextResponse.json(
+          { error: "L'URL de l'image doit être une chaîne de caractères" },
+          { status: 400 }
+        );
+      }
+
+      // Validation basique de l'URL
+      try {
+        new URL(body.image_url);
+        imageUrl = body.image_url;
+      } catch {
+        return NextResponse.json(
+          { error: "L'URL de l'image n'est pas valide" },
+          { status: 400 }
+        );
+      }
+    }
+
     const shopifyProduct = await createShopifyProduct({
       title: body.title,
       price: body.price,
+      imageUrl: imageUrl || undefined,
     });
 
     const [product] = await db
@@ -49,6 +79,7 @@ export async function POST(request: NextRequest) {
         shopifyId: BigInt(shopifyProduct.shopifyId),
         createdBy: auth.userId,
         salesCount: 0,
+        imageUrl: imageUrl,
       })
       .returning();
 
@@ -58,6 +89,7 @@ export async function POST(request: NextRequest) {
         shopifyId: product.shopifyId.toString(),
         title: shopifyProduct.title,
         price: shopifyProduct.price,
+        imageUrl: product.imageUrl,
         createdBy: product.createdBy,
         salesCount: product.salesCount,
         createdAt: product.createdAt,
@@ -120,5 +152,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-

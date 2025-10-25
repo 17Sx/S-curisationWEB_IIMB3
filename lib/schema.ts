@@ -43,6 +43,8 @@ export const roles = pgTable("roles", {
   canGetUsers: boolean("can_get_users").notNull().default(false),
   canPostProducts: boolean("can_post_products").notNull().default(false),
   canManageApiKeys: boolean("can_manage_api_keys").notNull().default(true),
+  canUploadImages: boolean("can_upload_images").notNull().default(false),
+  canGetBestsellers: boolean("can_get_bestsellers").notNull().default(false),
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });
@@ -54,6 +56,7 @@ export const products = pgTable("products", {
     .notNull()
     .references(() => users.id),
   salesCount: integer("sales_count").notNull().default(0),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
 });

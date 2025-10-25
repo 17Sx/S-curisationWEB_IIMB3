@@ -32,6 +32,7 @@ session.accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
 interface CreateProductInput {
   title: string;
   price: string;
+  imageUrl?: string;
 }
 
 interface ShopifyProduct {
@@ -48,18 +49,29 @@ export async function createShopifyProduct(
 ): Promise<{ shopifyId: string; title: string; price: string }> {
   const client = new shopify.clients.Rest({ session });
 
+  const productData: any = {
+    title: input.title,
+    variants: [
+      {
+        price: input.price,
+        inventory_management: null,
+      },
+    ],
+  };
+
+  if (input.imageUrl) {
+    productData.images = [
+      {
+        src: input.imageUrl,
+        alt: input.title,
+      },
+    ];
+  }
+
   const response = await client.post({
     path: "products",
     data: {
-      product: {
-        title: input.title,
-        variants: [
-          {
-            price: input.price,
-            inventory_management: null,
-          },
-        ],
-      },
+      product: productData,
     },
   });
 

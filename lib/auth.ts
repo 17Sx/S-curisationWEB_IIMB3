@@ -96,6 +96,8 @@ export async function assertPermission(
     | "canGetUsers"
     | "canPostProducts"
     | "canManageApiKeys"
+    | "canUploadImages"
+    | "canGetBestsellers"
 ) {
   const auth = await authenticateRequest(request);
 
@@ -108,6 +110,8 @@ export async function assertPermission(
       canGetUsers: roles.canGetUsers,
       canPostProducts: roles.canPostProducts,
       canManageApiKeys: roles.canManageApiKeys,
+      canUploadImages: roles.canUploadImages,
+      canGetBestsellers: roles.canGetBestsellers,
     })
     .from(roles)
     .where(eq(roles.id, auth.roleId!))
@@ -121,7 +125,7 @@ export async function assertPermission(
     throw new PermissionError("Permission refusée");
   }
 
-  return auth;
+  return { ...auth, role };
 }
 
 export function generateToken(
